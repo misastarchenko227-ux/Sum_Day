@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sum_day/Main_Screen/Main_Screen.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
@@ -66,6 +67,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
         // После успешной регистрации обычно перенаправляют на главный экран:
         // Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+        );
       }
     } on AuthException catch (e) {
       // Специфичные ошибки Supabase (например, слишком слабый пароль или email занят)
