@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 
 class RegistrationForm extends StatefulWidget {
@@ -30,6 +31,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
 
 
   // ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В БД
+// ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В SUPABASE
   Future<void> _registerUser() async {
     // 1. Проверяем валидацию полей
     if (!_formKey.currentState!.validate()) return;
@@ -45,25 +47,38 @@ class _RegistrationFormState extends State<RegistrationForm> {
       String email = _emailController.text.trim();
       String password = _passwordController.text;
 
-      print('Отправка в БД: $name, $email, $password');
+      print('Отправка в Supabase: $name, $email'); // Пароль лучше не принтовать в консоль
 
-      // Здесь в будущем будет ваша логика работы с БД, например:
-      // await myDatabase.createUser(name, email, password);
+      // Вызываем метод signUp у Supabase
+      final response = await Supabase.instance.client.auth.signUp(
+        email: email,
+        password: password,
+        data: {
+          'name': name, // Сохраняем имя пользователя в его метаданные
+        },
+      );
 
-      // Имитируем задержку сети/БД в 2 секунды
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Если все успешно, показываем сообщение
-      if (mounted) {
+      // Если всё успешно и пользователь создан
+      if (response.user != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вы успешно зарегистрировались!')),
         );
+
+        // После успешной регистрации обычно перенаправляют на главный экран:
+        // Navigator.pushReplacementNamed(context, '/home');
       }
-    } catch (e) {
-      // Если произошла ошибка при записи в БД
+    } on AuthException catch (e) {
+      // Специфичные ошибки Supabase (например, слишком слабый пароль или email занят)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка регистрации: $e')),
+          SnackBar(content: Text('Ошибка аутентификации: ${e.message}')),
+        );
+      }
+    } catch (e) {
+      // Любые другие ошибки (например, нет интернета)
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Неизвестная ошибка: $e')),
         );
       }
     } finally {
