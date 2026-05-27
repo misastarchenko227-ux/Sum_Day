@@ -1,19 +1,5 @@
 import 'package:flutter/material.dart';
-void main() {
-  runApp(const MyApp());
-}
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: RegistrationScreen(), // Указываем ваш экран регистрации стартовым
-    );
-  }
-}
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
 
@@ -56,6 +42,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               children: [
                 // Заголовок
                 const Text(
+                  "Добро пожаловать",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+
                   'Создать аккаунт',
                   style: TextStyle(
                     fontSize: 28,
