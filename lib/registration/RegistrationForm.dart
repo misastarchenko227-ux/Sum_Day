@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
+import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
 
 
 class RegistrationForm extends StatefulWidget {
@@ -13,14 +14,11 @@ class RegistrationForm extends StatefulWidget {
 class _RegistrationFormState extends State<RegistrationForm> {
   final _formKey = GlobalKey<FormState>();
 
-  bool _isPasswordObscured = true;
-  bool _isConfirmPasswordObscured = true;
-
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-
+  bool _isLoading = false;
   @override
   void dispose() {
     _nameController.dispose();
@@ -28,6 +26,54 @@ class _RegistrationFormState extends State<RegistrationForm> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+
+  // ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В БД
+  Future<void> _registerUser() async {
+    // 1. Проверяем валидацию полей
+    if (!_formKey.currentState!.validate()) return;
+
+    // 2. Включаем индикатор загрузки
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Собираем данные из контроллеров в переменные
+      String name = _nameController.text.trim();
+      String email = _emailController.text.trim();
+      String password = _passwordController.text;
+
+      print('Отправка в БД: $name, $email, $password');
+
+      // Здесь в будущем будет ваша логика работы с БД, например:
+      // await myDatabase.createUser(name, email, password);
+
+      // Имитируем задержку сети/БД в 2 секунды
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Если все успешно, показываем сообщение
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Вы успешно зарегистрировались!')),
+        );
+      }
+    } catch (e) {
+      // Если произошла ошибка при записи в БД
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Ошибка регистрации: $e')),
+        );
+      }
+    } finally {
+      // 3. Выключаем индикатор загрузки в любом случае
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -66,65 +112,26 @@ class _RegistrationFormState extends State<RegistrationForm> {
           const SizedBox(height: 16),
 
           // Поле: Пароль
-          TextFormField(
-            controller: _passwordController,
-            obscureText: _isPasswordObscured,
-            decoration: InputDecoration(
-              labelText: 'Пароль',
-              prefixIcon: const Icon(Icons.lock_outline),
-              suffixIcon: IconButton(
-                icon: Icon(_isPasswordObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                onPressed: () => setState(() => _isPasswordObscured = !_isPasswordObscured),
-              ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'Пожалуйста, придумайте пароль';
-              if (value.length < 6) return 'Пароль должен быть не менее 6 символов';
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Поле: Повтор пароля
-          TextFormField(
-            controller: _confirmPasswordController,
-            obscureText: _isConfirmPasswordObscured,
-            decoration: InputDecoration(
-              labelText: 'Повторите пароль',
-              prefixIcon: const Icon(Icons.lock_clock_outlined),
-              suffixIcon: IconButton(
-                icon: Icon(_isConfirmPasswordObscured ? Icons.visibility_off_outlined : Icons.visibility_outlined),
-                onPressed: () => setState(() => _isConfirmPasswordObscured = !_isConfirmPasswordObscured),
-              ),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'Пожалуйста, повторите пароль';
-              if (value != _passwordController.text) return 'Пароли не совпадают';
-              return null;
-            },
-          ),
+          CustomPasswordField(controller: _passwordController),
           const SizedBox(height: 32),
 
           // Кнопка регистрации
+
           ElevatedButton(
-            onPressed: () {
-              if (_formKey.currentState!.validate()) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Валидация прошла успешно!')),
-                );
-              }
-            },
+            // Если идет загрузка, делаем кнопку некликабельной (onPressed: null)
+            onPressed: _isLoading ? null : _registerUser,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            child: const Text(
-              'Зарегистрироваться',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
+            // Если идет загрузка — показываем крутилку, иначе — текст
+            child: _isLoading
+                ? const SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            )
+                : const Text('Зарегистрироваться',style: TextStyle( color: Colors.black87),),
           ),
           const SizedBox(height: 24),
 
