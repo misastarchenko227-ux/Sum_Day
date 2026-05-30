@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sum_day/registration/registration_mainScren.dart';
+import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 // Импортируйте ваши экраны (замените пути на правильные, если они отличаются)
 import 'package:sum_day/Main_Screen/Main_Screen.dart';
-
+import 'package:sum_day/repository/repository.dart';
+final authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
 void main() async {
   // Инициализация Flutter-биндингов (обязательно перед SharedPreferences и Supabase)
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // Вместо прямой загрузки RegistrationScreen, мы сначала запускаем проверку авторизации
-      home: const AuthStateCheck(),
+      home:  AuthStateCheck(), // Наш виджет проверки,
     );
   }
 }
@@ -47,32 +49,17 @@ class _AuthStateCheckState extends State<AuthStateCheck> {
   }
 
   Future<void> _checkAuth() async {
-    // Получаем доступ к локальному хранилищу
-    final prefs = await SharedPreferences.getInstance();
-    // Проверяем, была ли установлена галочка (если нет данных, то по умолчанию false)
-    final rememberMe = prefs.getBool('remember_me') ?? false;
-
-    // Проверяем, есть ли активная сессия в Supabase
-    final session = Supabase.instance.client.auth.currentSession;
-    print('=== ПРОВЕРКА АВТОРИЗАЦИИ ===');
-    print('Галочка "Запомнить меня": $rememberMe');
-    print('Сессия Supabase: ${session != null ? "АКТИВНА" : "НЕТ СЕССИИ"}');
-    print('============================');
+    // Вызываем метод из репозитория, который мы только что протестировали!
+    final shouldGoToHome = await authRepository.isUserLoggedInAndRemembered();
 
     if (!mounted) return;
 
-    if (session != null && rememberMe) {
-      // ЕСЛИ сессия есть И галочка была поставлена -> сразу на Главный Экран
+    if (shouldGoToHome) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
       );
     } else {
-      // ЕСЛИ галочки не было (или сессия истекла) -> принудительно разлогиниваем в Supabase (на всякий случай)
-      if (session != null) {
-        await Supabase.instance.client.auth.signOut();
-      }
-      // И отправляем на экран регистрации/входа
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const RegistrationScreen()),

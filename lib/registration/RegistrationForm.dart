@@ -4,8 +4,9 @@ import 'package:sum_day/Main_Screen/Main_Screen.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
+import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+final authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
 
@@ -46,19 +47,15 @@ class _RegistrationFormState extends State<RegistrationForm> {
       String email = _emailController.text.trim();
       String password = _passwordController.text;
 
-      final response = await Supabase.instance.client.auth.signUp(
+      // Вызываем наш протестированный метод
+      final isSuccess = await authRepository.registerUser(
         email: email,
         password: password,
-        data: {
-          'name': name,
-        },
+        name: name,
+        rememberMe: _rememberMe, // Передаем состояние галочки
       );
 
-      if (response.user != null && mounted) {
-        // СОХРАНЯЕМ ВЫБОР ПОЛЬЗОВАТЕЛЯ ("Запомнить меня")
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('remember_me', _rememberMe);
-
+      if (isSuccess && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вы успешно зарегистрировались!')),
         );
