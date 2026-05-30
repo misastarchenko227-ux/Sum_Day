@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Добавлен импорт
 import 'package:sum_day/Main_Screen/Main_Screen.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
@@ -20,7 +20,10 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
   bool _isLoading = false;
+  bool _rememberMe = false; // Добавлена переменная для галочки
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -30,64 +33,54 @@ class _RegistrationFormState extends State<RegistrationForm> {
     super.dispose();
   }
 
-
-  // ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В БД
-// ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В SUPABASE
+  // ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В SUPABASE
   Future<void> _registerUser() async {
-    // 1. Проверяем валидацию полей
     if (!_formKey.currentState!.validate()) return;
 
-    // 2. Включаем индикатор загрузки
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Собираем данные из контроллеров в переменные
       String name = _nameController.text.trim();
       String email = _emailController.text.trim();
       String password = _passwordController.text;
 
-      print('Отправка в Supabase: $name, $email'); // Пароль лучше не принтовать в консоль
-
-      // Вызываем метод signUp у Supabase
       final response = await Supabase.instance.client.auth.signUp(
         email: email,
         password: password,
         data: {
-          'name': name, // Сохраняем имя пользователя в его метаданные
+          'name': name,
         },
       );
 
-      // Если всё успешно и пользователь создан
       if (response.user != null && mounted) {
+        // СОХРАНЯЕМ ВЫБОР ПОЛЬЗОВАТЕЛЯ ("Запомнить меня")
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('remember_me', _rememberMe);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вы успешно зарегистрировались!')),
         );
 
-        // После успешной регистрации обычно перенаправляют на главный экран:
-        // Navigator.pushReplacementNamed(context, '/home');
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const HomeScreen()),
         );
       }
     } on AuthException catch (e) {
-      // Специфичные ошибки Supabase (например, слишком слабый пароль или email занят)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка аутентификации: ${e.message}')),
         );
       }
     } catch (e) {
-      // Любые другие ошибки (например, нет интернета)
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Неизвестная ошибка: $e')),
         );
       }
     } finally {
-      // 3. Выключаем индикатор загрузки в любом случае
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -103,7 +96,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Заголовок
           const Text(
             "Добро пожаловать",
             style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
@@ -123,28 +115,41 @@ class _RegistrationFormState extends State<RegistrationForm> {
           ),
           const SizedBox(height: 40),
 
-          // Поле: Имя
           CustomNameField(nameController: _nameController),
           const SizedBox(height: 16),
 
-          // Поле: Email
           CustomEmailField(controller: _emailController),
           const SizedBox(height: 16),
 
-          // Поле: Пароль
           CustomPasswordField(controller: _passwordController),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16), // Уменьшен отступ для галочки
 
-          // Кнопка регистрации
+          // ГАЛОЧКА "ЗАПОМНИТЬ МЕНЯ"
+          Row(
+            children: [
+              Checkbox(
+                value: _rememberMe,
+                activeColor: Colors.blueAccent,
+                onChanged: (value) {
+                  setState(() {
+                    _rememberMe = value ?? false;
+                  });
+                },
+              ),
+              const Text(
+                'Запомнить меня',
+                style: TextStyle(fontSize: 16, color: Colors.black87),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
 
           ElevatedButton(
-            // Если идет загрузка, делаем кнопку некликабельной (onPressed: null)
             onPressed: _isLoading ? null : _registerUser,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blueAccent,
               padding: const EdgeInsets.symmetric(vertical: 16),
             ),
-            // Если идет загрузка — показываем крутилку, иначе — текст
             child: _isLoading
                 ? const SizedBox(
               height: 20,
@@ -155,7 +160,6 @@ class _RegistrationFormState extends State<RegistrationForm> {
           ),
           const SizedBox(height: 24),
 
-          // Ссылка на вход
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

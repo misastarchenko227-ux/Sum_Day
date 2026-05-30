@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sum_day/registration/registration_mainScren.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-void main() async{
+// Импортируйте ваши экраны (замените пути на правильные, если они отличаются)
+import 'package:sum_day/Main_Screen/Main_Screen.dart';
+
+void main() async {
+  // Инициализация Flutter-биндингов (обязательно перед SharedPreferences и Supabase)
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Инициализация Supabase
   await Supabase.initialize(
     url: 'https://jcnycdmjawnvlmrdlsxn.supabase.co',
     anonKey: 'sb_publishable_giSuoz_HYC_-j0ggxSoHzA_pkezdZGz',
   );
+
   runApp(const MyApp());
 }
 
@@ -17,7 +25,70 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const RegistrationScreen(), // Теперь const можно (и нужно) поставить сюда, если у экрана константный конструктор
+      // Вместо прямой загрузки RegistrationScreen, мы сначала запускаем проверку авторизации
+      home: const AuthStateCheck(),
+    );
+  }
+}
+
+// Новый виджет, который проверяет, ставить ли галочку "Запомнить меня"
+class AuthStateCheck extends StatefulWidget {
+  const AuthStateCheck({super.key});
+
+  @override
+  State<AuthStateCheck> createState() => _AuthStateCheckState();
+}
+
+class _AuthStateCheckState extends State<AuthStateCheck> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    // Получаем доступ к локальному хранилищу
+    final prefs = await SharedPreferences.getInstance();
+    // Проверяем, была ли установлена галочка (если нет данных, то по умолчанию false)
+    final rememberMe = prefs.getBool('remember_me') ?? false;
+
+    // Проверяем, есть ли активная сессия в Supabase
+    final session = Supabase.instance.client.auth.currentSession;
+    print('=== ПРОВЕРКА АВТОРИЗАЦИИ ===');
+    print('Галочка "Запомнить меня": $rememberMe');
+    print('Сессия Supabase: ${session != null ? "АКТИВНА" : "НЕТ СЕССИИ"}');
+    print('============================');
+
+    if (!mounted) return;
+
+    if (session != null && rememberMe) {
+      // ЕСЛИ сессия есть И галочка была поставлена -> сразу на Главный Экран
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    } else {
+      // ЕСЛИ галочки не было (или сессия истекла) -> принудительно разлогиниваем в Supabase (на всякий случай)
+      if (session != null) {
+        await Supabase.instance.client.auth.signOut();
+      }
+      // И отправляем на экран регистрации/входа
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Пока идет асинхронная проверка (доли секунды), показываем красивый экран загрузки
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(
+          color: Colors.blueAccent,
+        ),
+      ),
     );
   }
 }
