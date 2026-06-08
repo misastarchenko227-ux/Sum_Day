@@ -185,7 +185,7 @@ class _RegistrationFormState extends State<RegistrationForm> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (_) => const LoginScreen()),
+                                    builder: (_) => const LoginWidget()),
                               );
                             },
                             child: const Text(
