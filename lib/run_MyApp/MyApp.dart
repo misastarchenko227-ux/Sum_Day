@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sum_day/registration/registration_mainScren.dart';
+
 import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 // Импортируйте ваши экраны (замените пути на правильные, если они отличаются)
 import 'package:sum_day/Main_Screen/Main_Screen.dart';
-import 'package:sum_day/repository/repository.dart';
+
+import 'package:sum_day/Login/LoginScreen.dart';
 final authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
 void main() async {
   // Инициализация Flutter-биндингов (обязательно перед SharedPreferences и Supabase)
@@ -62,7 +62,7 @@ class _AuthStateCheckState extends State<AuthStateCheck> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }

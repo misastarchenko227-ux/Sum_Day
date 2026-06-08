@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // Добавлен импорт
+import 'package:sum_day/Login/LoginScreen.dart';
 import 'package:sum_day/Main_Screen/Main_Screen.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart';
@@ -162,14 +162,25 @@ class _RegistrationFormState extends State<RegistrationForm> {
             children: [
               const Text('Уже есть аккаунт? '),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  // Перебрасываем пользователя на экран авторизации
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const LoginScreen(),
+                    ),
+                  );
+                },
                 child: const Text(
                   'Войти',
-                  style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.blueAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
-          ),
+          )
         ],
       ),
     );
