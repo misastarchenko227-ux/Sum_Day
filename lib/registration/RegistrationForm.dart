@@ -6,7 +6,9 @@ import 'package:sum_day/registration/Add_Email,Name,Password/Name_Interfais.dart
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
 import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
 final authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
+
 class RegistrationForm extends StatefulWidget {
   const RegistrationForm({super.key});
 
@@ -20,49 +22,38 @@ class _RegistrationFormState extends State<RegistrationForm> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();
 
   bool _isLoading = false;
-  bool _rememberMe = false; // Добавлена переменная для галочки
+  bool _rememberMe = false;
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
-    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  // ФУНКЦИЯ ДЛЯ СБОРА ДАННЫХ И ОТПРАВКИ В SUPABASE
   Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
     try {
-      String name = _nameController.text.trim();
-      String email = _emailController.text.trim();
-      String password = _passwordController.text;
-
-      // Вызываем наш протестированный метод
       final isSuccess = await authRepository.registerUser(
-        email: email,
-        password: password,
-        name: name,
-        rememberMe: _rememberMe, // Передаем состояние галочки
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+        name: _nameController.text.trim(),
+        rememberMe: _rememberMe,
       );
 
       if (isSuccess && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вы успешно зарегистрировались!')),
         );
-
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
         );
       }
     } on AuthException catch (e) {
@@ -78,110 +69,144 @@ class _RegistrationFormState extends State<RegistrationForm> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const Text(
-            "Добро пожаловать",
-            style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black87),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Создать аккаунт',
-            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.black87),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Заполните данные, чтобы начать',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 40),
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F0F23),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth >= 600;
+            final horizontalPadding = isDesktop ? 120.0 : 24.0;
 
-          CustomNameField(nameController: _nameController),
-          const SizedBox(height: 16),
+            return Center(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: isDesktop ? 80 : 64,
+                        height: isDesktop ? 80 : 64,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF7C3AED),
+                          borderRadius: BorderRadius.circular(isDesktop ? 24 : 18),
+                        ),
+                        child: Icon(Icons.wb_sunny_rounded,
+                            color: Colors.white, size: isDesktop ? 40 : 32),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Создать аккаунт',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: isDesktop ? 32 : 24,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFFF0EEFF),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Заполните данные, чтобы начать',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 14, color: Color(0xFF8B8BAA)),
+                      ),
+                      const SizedBox(height: 40),
 
-          CustomEmailField(controller: _emailController),
-          const SizedBox(height: 16),
+                      CustomNameField(nameController: _nameController),
+                      const SizedBox(height: 16),
 
-          CustomPasswordField(controller: _passwordController),
-          const SizedBox(height: 16), // Уменьшен отступ для галочки
+                      CustomEmailField(controller: _emailController),
+                      const SizedBox(height: 16),
 
-          // ГАЛОЧКА "ЗАПОМНИТЬ МЕНЯ"
-          Row(
-            children: [
-              Checkbox(
-                value: _rememberMe,
-                activeColor: Colors.blueAccent,
-                onChanged: (value) {
-                  setState(() {
-                    _rememberMe = value ?? false;
-                  });
-                },
-              ),
-              const Text(
-                'Запомнить меня',
-                style: TextStyle(fontSize: 16, color: Colors.black87),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
+                      CustomPasswordField(controller: _passwordController),
+                      const SizedBox(height: 12),
 
-          ElevatedButton(
-            onPressed: _isLoading ? null : _registerUser,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blueAccent,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-            ),
-            child: _isLoading
-                ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-            )
-                : const Text('Зарегистрироваться',style: TextStyle( color: Colors.black87),),
-          ),
-          const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            activeColor: const Color(0xFF7C3AED),
+                            checkColor: Colors.white,
+                            side: const BorderSide(color: Color(0xFF3A3A5C)),
+                            onChanged: (value) {
+                              setState(() => _rememberMe = value ?? false);
+                            },
+                          ),
+                          const Text(
+                            'Запомнить меня',
+                            style: TextStyle(fontSize: 14, color: Color(0xFF8B8BAA)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Уже есть аккаунт? '),
-              GestureDetector(
-                onTap: () {
-                  // Перебрасываем пользователя на экран авторизации
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const LoginScreen(),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'Войти',
-                  style: TextStyle(
-                    color: Colors.blueAccent,
-                    fontWeight: FontWeight.bold,
+                      SizedBox(
+                        height: 52,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _registerUser,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C3AED),
+                            foregroundColor: Colors.white,
+                            textStyle: const TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.w600),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                                color: Colors.white, strokeWidth: 2),
+                          )
+                              : const Text('Зарегистрироваться'),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Уже есть аккаунт? ',
+                            style: TextStyle(color: Color(0xFF8B8BAA), fontSize: 13),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const LoginScreen()),
+                              );
+                            },
+                            child: const Text(
+                              'Войти',
+                              style: TextStyle(
+                                color: Color(0xFF7C3AED),
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                    ],
                   ),
                 ),
               ),
-            ],
-          )
-        ],
+            );
+          },
+        ),
       ),
     );
   }

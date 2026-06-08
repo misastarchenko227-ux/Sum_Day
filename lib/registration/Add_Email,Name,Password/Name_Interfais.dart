@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:sum_day/Text_Stile/AppTheme.dart';
 
 class CustomNameField extends StatelessWidget {
-  // Переменная теперь публичная (без подчеркивания)
   final TextEditingController nameController;
 
   const CustomNameField({
     super.key,
-    required this.nameController, // Теперь Dart не ругается
+    required this.nameController,
   });
 
   @override
@@ -14,13 +14,8 @@ class CustomNameField extends StatelessWidget {
     return TextFormField(
       controller: nameController,
       keyboardType: TextInputType.name,
-      decoration: InputDecoration(
-        labelText: 'Имя',
-        prefixIcon: const Icon(Icons.person_outline),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+      style: const TextStyle(color: AppTheme.textPrimary),
+      decoration: AppTheme.fieldDecoration('Имя', Icons.person_outline),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return 'Пожалуйста, введите имя';

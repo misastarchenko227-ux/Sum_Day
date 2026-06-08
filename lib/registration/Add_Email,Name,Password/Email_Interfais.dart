@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:sum_day/Text_Stile/AppTheme.dart';
 
 class CustomEmailField extends StatelessWidget {
   final TextEditingController controller;
 
-  // Контроллер передаем через конструктор, чтобы управлять текстом из главного экрана
   const CustomEmailField({
     super.key,
     required this.controller,
@@ -14,18 +14,12 @@ class CustomEmailField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       keyboardType: TextInputType.emailAddress,
-      decoration: InputDecoration(
-        labelText: 'Email',
-        prefixIcon: const Icon(Icons.email_outlined),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-      ),
+      style: const TextStyle(color: AppTheme.textPrimary),
+      decoration: AppTheme.fieldDecoration('Email', Icons.email_outlined),
       validator: (value) {
         if (value == null || value.trim().isEmpty) {
           return 'Пожалуйста, введите Email';
         }
-        // Регулярное выражение для проверки корректности email
         final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
         if (!emailRegex.hasMatch(value.trim())) {
           return 'Введите корректный Email';
