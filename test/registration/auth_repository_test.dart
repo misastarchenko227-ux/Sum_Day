@@ -3,7 +3,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../lib/repository/repository.dart';
+import '../../lib/repository/repository.dart';
 
 // Импортируйте ваш репозиторий (укажите правильный путь к вашему файлу)
 // import 'package:sum_day/repository/auth_repository.dart';
@@ -69,37 +69,40 @@ void main() {
     });
 
     test('Проверка авторизации: сессия есть и галочка стоит -> пускаем', () async {
-      // Подготовка
       SharedPreferences.setMockInitialValues({'remember_me': true});
 
+      final mockResponse = MockAuthResponse();
       final mockSession = MockSession();
-      when(() => mockAuth.currentSession).thenReturn(mockSession); // Сессия активна
 
-      // Действие
+      when(() => mockResponse.session).thenReturn(mockSession);
+      when(() => mockAuth.refreshSession()).thenAnswer((_) async => mockResponse);
+
       final isLoggedIn = await repository.isUserLoggedInAndRemembered();
 
-      // Проверка
       expect(isLoggedIn, isTrue);
     });
 
     test('Проверка авторизации: сессия есть, НО галочки нет -> разлогиниваем', () async {
-      // Подготовка
-      SharedPreferences.setMockInitialValues({'remember_me': false}); // Галочки нет
+      SharedPreferences.setMockInitialValues({'remember_me': false});
 
-      final mockSession = MockSession();
-      when(() => mockAuth.currentSession).thenReturn(mockSession);
-
-      // Нам нужно "замокать" функцию signOut, чтобы она ничего не делала (просто завершалась)
-      when(() => mockAuth.signOut()).thenAnswer((_) async {});
-
-      // Действие
       final isLoggedIn = await repository.isUserLoggedInAndRemembered();
 
-      // Проверка
-      expect(isLoggedIn, isFalse); // Должно не пустить
-      // Проверяем, что реально был вызван метод signOut() у Supabase
+      expect(isLoggedIn, isFalse);
+      verifyNever(() => mockAuth.refreshSession());
+    });
+
+    test('Проверка авторизации: refreshSession упал -> разлогиниваем', () async {
+      SharedPreferences.setMockInitialValues({'remember_me': true});
+
+      when(() => mockAuth.refreshSession()).thenThrow(Exception('User not found'));
+      when(() => mockAuth.signOut()).thenAnswer((_) async {});
+
+      final isLoggedIn = await repository.isUserLoggedInAndRemembered();
+
+      expect(isLoggedIn, isFalse);
       verify(() => mockAuth.signOut()).called(1);
     });
+
   });
 }
 
