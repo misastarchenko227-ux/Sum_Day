@@ -93,15 +93,34 @@ class _RegistrationFormState extends State<RegistrationForm> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       Container(
-                        width: isDesktop ? 80 : 64,
-                        height: isDesktop ? 80 : 64,
+                        // Увеличим ширину, так как текст длинный, а 80 пикселей для него слишком мало
+                        width: isDesktop ? 300 : 200,
+                        height: isDesktop ? 120 : 100,
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: const Color(0xFF7C3AED),
                           borderRadius: BorderRadius.circular(isDesktop ? 24 : 18),
                         ),
-                        child: Icon(Icons.wb_sunny_rounded,
-                            color: Colors.white, size: isDesktop ? 40 : 32),
+                        child: Column( // <--- Объединяем их в колонку
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                                Icons.wb_sunny_rounded,
+                                color: Colors.white,
+                                size: isDesktop ? 40 : 32
+                            ),
+                            const SizedBox(height: 8), // Небольшой отступ между иконкой и текстом
+                            Text(
+                              "SumDay",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: isDesktop ? 20 : 16, // Сделали шрифт чуть меньше, чтобы он влез в контейнер
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
