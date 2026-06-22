@@ -82,9 +82,12 @@ class AuthRepository {
   /// Сброс пароля — всегда возвращает true (безопасность: не раскрываем существование аккаунта)
   Future<void> sendPasswordResetEmail({required String email}) async {
     try {
-      await supabaseClient.auth.resetPasswordForEmail(email);
+      await supabaseClient.auth.resetPasswordForEmail(
+        email,
+        redirectTo: 'sumday://reset-password', // ← это должно быть здесь
+      );
     } catch (e) {
-      // Намеренноглотаем ошибку — не раскрываем существует ли аккаунт
+      // намеренно глотаем
     }
   }
 }
