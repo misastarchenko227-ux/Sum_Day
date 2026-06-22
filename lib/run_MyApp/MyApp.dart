@@ -62,7 +62,7 @@ class _AuthStateCheckState extends State<AuthStateCheck> {
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const LoginWidget()),
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
       );
     }
   }

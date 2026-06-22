@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:sum_day/AppHeaderIcon/AppHeaderIcon.dart';
+import 'package:sum_day/registration/registration_mainScren.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Email_Interfais.dart';
 import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
-import 'package:sum_day/registration/registration_mainScren.dart';
 
+class LoginWidget extends StatelessWidget {
+  final TextEditingController emailController;
+  final TextEditingController passwordController;
+  final bool isLoading;
+  final VoidCallback onLogin;
+  final VoidCallback onForgotPassword;
 
-class LoginWidget extends StatefulWidget {
-  const LoginWidget({super.key});
-
-  @override
-  State<LoginWidget> createState() => _LoginWidgetState();
-}
-
-class _LoginWidgetState extends State<LoginWidget> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
+  const LoginWidget({
+    super.key,
+    required this.emailController,
+    required this.passwordController,
+    required this.isLoading,
+    required this.onLogin,
+    required this.onForgotPassword,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -37,20 +35,28 @@ class _LoginWidgetState extends State<LoginWidget> {
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
-                      width: isDesktop ? 80 : 64,
-                      height: isDesktop ? 80 : 64,
+                      // Размеры контейнера-обертки (если они нужны)
+                      width: isDesktop ? 300 : 200,
+                      height: isDesktop ? 120 : 100,
+                      alignment: Alignment.center,
                       decoration: BoxDecoration(
                         color: const Color(0xFF7C3AED),
                         borderRadius: BorderRadius.circular(isDesktop ? 24 : 18),
                       ),
-                      child: Icon(Icons.wb_sunny_rounded,
-                          color: Colors.white, size: isDesktop ? 40 : 32),
+                      // Просто вызываем наш класс, он сам всё отрисует
+                      child: AppHeaderIcon(
+                        title: "Sum Day",
+                        icon: Icons.wb_sunny_rounded,
+                        isDesktop: isDesktop, // Используйте вашу переменную
+                      ),
                     ),
                     const SizedBox(height: 16),
                     Text(
                       'Вход в аккаунт',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: isDesktop ? 32 : 24,
                         fontWeight: FontWeight.w600,
@@ -59,7 +65,8 @@ class _LoginWidgetState extends State<LoginWidget> {
                     ),
                     const SizedBox(height: 4),
                     const Text(
-                      'Добро пожаловать назад',
+                      'С возвращением',
+                      textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 14, color: Color(0xFF8B8BAA)),
                     ),
                     const SizedBox(height: 40),
@@ -70,21 +77,26 @@ class _LoginWidgetState extends State<LoginWidget> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: null,
+                        onPressed: onForgotPassword,
                         child: const Text(
                           'Забыли пароль?',
-                          style: TextStyle(
-                              color: Color(0xFF7C3AED), fontSize: 13),
+                          style: TextStyle(color: Color(0xFF7C3AED), fontSize: 13),
                         ),
                       ),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
-                      width: double.infinity,
                       height: 52,
                       child: ElevatedButton.icon(
-                        onPressed: null,
-                        icon: const Icon(Icons.login_rounded),
+                        onPressed: isLoading ? null : onLogin,
+                        icon: isLoading
+                            ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                            : const Icon(Icons.login_rounded),
                         label: const Text('Войти'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7C3AED),
@@ -111,15 +123,13 @@ class _LoginWidgetState extends State<LoginWidget> {
                     ),
                     const SizedBox(height: 16),
                     SizedBox(
-                      width: double.infinity,
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const RegistrationScreen(),
-                            ),
+                                builder: (_) => const RegistrationScreen()),
                           );
                         },
                         icon: const Icon(Icons.person_add_alt_1_rounded),

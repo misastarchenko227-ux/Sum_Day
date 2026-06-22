@@ -79,4 +79,12 @@ class AuthRepository {
       rethrow;
     }
   }
+  /// Сброс пароля — всегда возвращает true (безопасность: не раскрываем существование аккаунта)
+  Future<void> sendPasswordResetEmail({required String email}) async {
+    try {
+      await supabaseClient.auth.resetPasswordForEmail(email);
+    } catch (e) {
+      // Намеренноглотаем ошибку — не раскрываем существует ли аккаунт
+    }
+  }
 }
