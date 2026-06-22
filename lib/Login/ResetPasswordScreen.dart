@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:sum_day/AppHeaderIcon/AppHeaderIcon.dart';
 import 'package:sum_day/Login/ResetPasswordScreen_Widget.dart';
-import 'package:sum_day/repository/repository.dart';
+
 import 'package:sum_day/Login/LoginScreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:sum_day/registration/Add_Email,Name,Password/Password_Interfais.dart';
 
-final _authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
+
+
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({super.key});
@@ -30,6 +29,13 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   Future<void> _resetPassword() async {
     if (!_formKey.currentState!.validate()) return;
+
+    if (_passwordController.text != _confirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Пароли не совпадают')),
+      );
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {

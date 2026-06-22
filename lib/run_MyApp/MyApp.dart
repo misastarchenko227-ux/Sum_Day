@@ -1,4 +1,6 @@
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
+import 'package:sum_day/Login/ResetPasswordScreen.dart';
 
 import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -42,10 +44,25 @@ class AuthStateCheck extends StatefulWidget {
 }
 
 class _AuthStateCheckState extends State<AuthStateCheck> {
+  final _appLinks = AppLinks();
+
   @override
   void initState() {
     super.initState();
     _checkAuth();
+    _listenDeepLinks();
+  }
+
+  void _listenDeepLinks() {
+    _appLinks.uriLinkStream.listen((uri) {
+      if (uri.scheme == 'sumday' && mounted) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+              (_) => false,
+        );
+      }
+    });
   }
 
   Future<void> _checkAuth() async {

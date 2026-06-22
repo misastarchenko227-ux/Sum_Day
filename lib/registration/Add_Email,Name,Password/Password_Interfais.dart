@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:sum_day/Text_Stile/AppTheme.dart';
-
 class CustomPasswordField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
+  final String? hintText;
 
   const CustomPasswordField({
     super.key,
     required this.controller,
     this.labelText = 'Пароль',
+    this.hintText,
   });
 
   @override
@@ -25,6 +26,7 @@ class _CustomPasswordFieldState extends State<CustomPasswordField> {
       obscureText: _isPasswordObscured,
       style: const TextStyle(color: AppTheme.textPrimary),
       decoration: AppTheme.fieldDecoration(widget.labelText, Icons.lock_outline).copyWith(
+        hintText: widget.hintText,
         suffixIcon: IconButton(
           icon: Icon(
             _isPasswordObscured
