@@ -1,13 +1,13 @@
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:sum_day/Login/ResetPasswordScreen.dart';
-
+import 'package:sum_day/config/secrets.dart';
 import 'package:sum_day/repository/repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 // Импортируйте ваши экраны (замените пути на правильные, если они отличаются)
 import 'package:sum_day/Main_Screen/Main_Screen.dart';
-
 import 'package:sum_day/Login/LoginScreen.dart';
+
 final authRepository = AuthRepository(supabaseClient: Supabase.instance.client);
 void main() async {
   // Инициализация Flutter-биндингов (обязательно перед SharedPreferences и Supabase)
@@ -15,8 +15,8 @@ void main() async {
 
   // Инициализация Supabase
   await Supabase.initialize(
-    url: 'https://jcnycdmjawnvlmrdlsxn.supabase.co',
-    anonKey: 'sb_publishable_giSuoz_HYC_-j0ggxSoHzA_pkezdZGz',
+    url: Secrets.url,
+    anonKey: Secrets.anonKey,
   );
 
   runApp(const MyApp());
