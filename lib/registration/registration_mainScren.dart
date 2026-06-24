@@ -47,9 +47,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вы успешно зарегистрировались!')),
         );
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),(route) => false
         );
       }
     } on AuthException catch (e) {
@@ -84,7 +84,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           setState(() => _rememberMe = value ?? false);
         },
         onLoginTap: () {
-          Navigator.push(
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const LoginScreen()),
           );

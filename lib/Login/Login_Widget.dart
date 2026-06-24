@@ -89,6 +89,8 @@ class LoginWidget extends StatelessWidget {
                             fontSize: 13,
                           ),
                         ),
+
+                        // логика в LoginScreen на 86 строке
                       ),
                     ),
                     const SizedBox(height: 8),
@@ -142,7 +144,7 @@ class LoginWidget extends StatelessWidget {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const RegistrationScreen(),
@@ -165,7 +167,7 @@ class LoginWidget extends StatelessWidget {
                       height: 48,
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          Navigator.push(
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (_) => const QRScannerScreen(),

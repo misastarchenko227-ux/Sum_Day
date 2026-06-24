@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:sum_day/widgets/back_button.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import "package:uuid/uuid.dart";
 
@@ -91,7 +92,8 @@ class _QRLoginScreenState extends State<QRLoginScreen> {
       backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        title: const Text('Вход по QR-коду',
+        leading: const AppBackButton(), // ← вот и всё
+        title: const Text('Твой QR код',
             style: TextStyle(color: Color(0xFFC4B5FD))),
         iconTheme: const IconThemeData(color: Color(0xFFC4B5FD)),
       ),

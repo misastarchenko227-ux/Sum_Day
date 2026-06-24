@@ -39,9 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (isSuccess && mounted) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          MaterialPageRoute(builder: (_) => const HomeScreen()),(route) => false,
         );
       }
     } on AuthException catch (e) {
@@ -88,6 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const ResetPasswordScreen()),
+            // кнопка в LoginWidget на  81 строке
           );
         }
       }

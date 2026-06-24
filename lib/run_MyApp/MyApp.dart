@@ -17,6 +17,7 @@ void main() async {
   await Supabase.initialize(
     url: Secrets.url,
     anonKey: Secrets.anonKey,
+    // данные в другом файле
   );
 
   runApp(const MyApp());
