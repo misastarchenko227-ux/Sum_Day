@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:sum_day/Login/QRScannerScreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -115,7 +116,7 @@ class HomeScreen extends StatelessWidget {
                 leading: const Icon(Icons.qr_code_scanner, color: Colors.blueAccent),
                 title: const Text('Вход для устройства через QR'),
                 onTap: () {
-                  // TODO: Реализовать логику QR-входа
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const QRScannerScreen()));
                 },
               ),
             ],

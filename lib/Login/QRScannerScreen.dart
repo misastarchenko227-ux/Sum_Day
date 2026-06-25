@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sum_day/Main_Screen/Main_Screen.dart';
 import 'package:sum_day/widgets/back_button.dart';
 import 'package:sum_day/Login/QRLoginScreen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,7 +42,7 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         title: const Text('Подтвердить вход?',
             style: TextStyle(color: Color(0xFFC4B5FD))),
         content: const Text(
-          'Вы пытаетесь войти на другом устройстве?',
+          'Войти в аккаунт с этого устройства?',
           style: TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -64,11 +66,26 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
     }
 
     try {
-      final token = _supabase.auth.currentSession?.accessToken;
-      if (token == null) throw Exception('Не авторизован');
+      final session = await _supabase
+          .from('qr_sessions')
+          .select('access_token, refresh_token')
+          .eq('session_id', sessionId)
+          .single();
+
+      final accessToken = session['access_token'] as String?;
+      final refreshToken = session['refresh_token'] as String?;
+
+      if (accessToken == null || refreshToken == null) {
+        throw Exception('Токены не найдены');
+      }
+
+      await _supabase.auth.setSession(refreshToken);
+
+      // Сохраняем флаг чтобы при следующем запуске не выкидывало на логин
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('remember_me', true);
 
       await _supabase.from('qr_sessions').update({
-        'access_token': token,
         'status': 'authorized',
       }).eq('session_id', sessionId);
 
@@ -76,9 +93,14 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Вход подтверждён!')),
         );
-        Navigator.pop(context);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+              (route) => false,
+        );
       }
-    } catch (e) {
+    }
+    catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Ошибка: $e')),
@@ -94,13 +116,6 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
       canPop: true,
       child: Scaffold(
         backgroundColor: const Color(0xFF1A1A2E),
-    /*    appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          leading: const AppBackButton(),
-          title: const Text('Вход по QR-коду',
-              style: TextStyle(color: Color(0xFFC4B5FD))),
-          iconTheme: const IconThemeData(color: Color(0xFFC4B5FD)),
-        ),*/
         body: _isProcessing
             ? const Center(
             child: CircularProgressIndicator(color: Color(0xFFC4B5FD)))

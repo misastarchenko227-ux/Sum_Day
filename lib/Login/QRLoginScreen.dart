@@ -29,7 +29,6 @@ class _QRLoginScreenState extends State<QRLoginScreen> {
     _sessionId = const Uuid().v4();
     _insertSession();
     _listenToSession();
-    // Обновляем QR каждые 60 секунд
     _expiryTimer = Timer.periodic(const Duration(seconds: 60), (_) {
       _channel?.unsubscribe();
       setState(() {
@@ -42,8 +41,15 @@ class _QRLoginScreenState extends State<QRLoginScreen> {
   }
 
   Future<void> _insertSession() async {
+    // Записываем токены текущего пользователя ПК (Кита)
+    final accessToken = _supabase.auth.currentSession?.accessToken;
+    final refreshToken = _supabase.auth.currentSession?.refreshToken;
+
     await _supabase.from('qr_sessions').insert({
       'session_id': _sessionId,
+      'access_token': accessToken,
+      'refresh_token': refreshToken,
+      'status': 'pending',
     });
   }
 
@@ -61,21 +67,20 @@ class _QRLoginScreenState extends State<QRLoginScreen> {
       ),
       callback: (payload) {
         final status = payload.newRecord['status'];
-        final token = payload.newRecord['access_token'];
-        if (status == 'authorized' && token != null) {
-          _completeLogin(token);
+        if (status == 'authorized') {
+          _completeLogin();
         }
       },
     )
         .subscribe();
   }
 
-  Future<void> _completeLogin(String token) async {
+  Future<void> _completeLogin() async {
     setState(() => _isLoggingIn = true);
-    // Устанавливаем сессию по токену
-    await _supabase.auth.setSession(token);
     if (mounted) {
-      Navigator.pushReplacementNamed(context, '/dashboard');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Телефон успешно подключён!')),
+      );
     }
   }
 
@@ -92,14 +97,24 @@ class _QRLoginScreenState extends State<QRLoginScreen> {
       backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        leading: const AppBackButton(), // ← вот и всё
+        leading: const AppBackButton(),
         title: const Text('Твой QR код',
             style: TextStyle(color: Color(0xFFC4B5FD))),
         iconTheme: const IconThemeData(color: Color(0xFFC4B5FD)),
       ),
       body: Center(
         child: _isLoggingIn
-            ? const CircularProgressIndicator(color: Color(0xFFC4B5FD))
+            ? Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: const [
+            CircularProgressIndicator(color: Color(0xFFC4B5FD)),
+            SizedBox(height: 16),
+            Text(
+              'Телефон подключён!',
+              style: TextStyle(color: Color(0xFFC4B5FD)),
+            ),
+          ],
+        )
             : Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
